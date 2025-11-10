@@ -166,7 +166,7 @@ const AdminPanel = () => {
 
   const handleCreateUser = async () => {
     try {
-      await api.post('/api/auth/register', newUser);
+      await api.post('/auth/register', newUser);
       setUserDialogOpen(false);
       setNewUser({ name: '', email: '', password: '', role: 'teacher', assignedGroups: [] });
       fetchData();
