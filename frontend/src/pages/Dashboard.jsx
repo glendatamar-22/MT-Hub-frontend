@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { format } from 'date-fns';
-import { et } from 'date-fns/locale/et';
+import { et } from 'date-fns/locale';
 
 const Dashboard = () => {
   const [groups, setGroups] = useState([]);
