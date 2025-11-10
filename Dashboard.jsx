@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/axios';
 import { format } from 'date-fns';
 import { et } from 'date-fns/locale/et';
 
@@ -58,7 +58,7 @@ const Dashboard = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await axios.get('/api/groups');
+      const response = await api.get('/api/groups');
       setGroups(response.data.data);
       setFilteredGroups(response.data.data);
     } catch (error) {

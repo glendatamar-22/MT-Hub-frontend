@@ -39,7 +39,7 @@ import {
   VideoLibrary,
   Image as ImageIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../config/axios';
 import { format } from 'date-fns';
 import { et } from 'date-fns/locale/et';
 import { useAuth } from '../context/AuthContext';
@@ -87,7 +87,7 @@ const GroupDetail = () => {
 
   const fetchGroupData = async () => {
     try {
-      const response = await axios.get(`/api/groups/${id}`);
+      const response = await api.get(`/api/groups/${id}`);
       setGroup(response.data.data);
     } catch (error) {
       console.error('Error fetching group:', error);
@@ -98,7 +98,7 @@ const GroupDetail = () => {
 
   const fetchSchedules = async () => {
     try {
-      const response = await axios.get(`/api/schedules?group=${id}`);
+      const response = await api.get(`/api/schedules?group=${id}`);
       setSchedules(response.data.data);
     } catch (error) {
       console.error('Error fetching schedules:', error);
@@ -107,7 +107,7 @@ const GroupDetail = () => {
 
   const fetchUpdates = async () => {
     try {
-      const response = await axios.get(`/api/updates?group=${id}`);
+      const response = await api.get(`/api/updates?group=${id}`);
       setUpdates(response.data.data);
     } catch (error) {
       console.error('Error fetching updates:', error);
@@ -122,7 +122,7 @@ const GroupDetail = () => {
 
   const handleScheduleSubmit = async () => {
     try {
-      await axios.post('/api/schedules', {
+      await api.post('/api/schedules', {
         ...newSchedule,
         group: id,
         date: new Date(newSchedule.date),
@@ -149,7 +149,7 @@ const GroupDetail = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post('/api/upload', formData, {
+      const response = await api.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -167,7 +167,7 @@ const GroupDetail = () => {
 
   const handleUpdateSubmit = async () => {
     try {
-      await axios.post('/api/updates', {
+      await api.post('/api/updates', {
         ...newUpdate,
         group: id,
       });
@@ -182,7 +182,7 @@ const GroupDetail = () => {
 
   const handleAddComment = async (updateId, content) => {
     try {
-      await axios.post(`/api/updates/${updateId}/comments`, { content });
+      await api.post(`/api/updates/${updateId}/comments`, { content });
       fetchUpdates();
       setUpdateComment({ ...updateComment, [updateId]: '' });
     } catch (error) {

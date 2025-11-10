@@ -42,7 +42,7 @@ import {
   School,
   Person,
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../config/axios';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -100,19 +100,19 @@ const AdminPanel = () => {
     try {
       if (tabValue === 0) {
         const [groupsRes, statsRes] = await Promise.all([
-          axios.get('/api/groups'),
-          axios.get('/api/admin/stats'),
+          api.get('/api/groups'),
+          api.get('/api/admin/stats'),
         ]);
         setGroups(groupsRes.data.data);
         setStats(statsRes.data.data);
       } else if (tabValue === 1) {
-        const response = await axios.get('/api/admin/users');
+        const response = await api.get('/api/admin/users');
         setUsers(response.data.data);
       } else if (tabValue === 2) {
-        const response = await axios.get('/api/students');
+        const response = await api.get('/api/students');
         setStudents(response.data.data);
       } else if (tabValue === 3) {
-        const response = await axios.get('/api/admin/parents');
+        const response = await api.get('/api/admin/parents');
         setParents(response.data.data);
       }
     } catch (error) {
@@ -124,7 +124,7 @@ const AdminPanel = () => {
 
   const handleCreateGroup = async () => {
     try {
-      await axios.post('/api/groups', newGroup);
+      await api.post('/api/groups', newGroup);
       setGroupDialogOpen(false);
       setNewGroup({ name: '', location: '', description: '' });
       fetchData();
@@ -136,7 +136,7 @@ const AdminPanel = () => {
 
   const handleCreateStudent = async () => {
     try {
-      await axios.post('/api/students', {
+      await api.post('/api/students', {
         firstName: newStudent.firstName,
         lastName: newStudent.lastName,
         age: parseInt(newStudent.age),
@@ -154,7 +154,7 @@ const AdminPanel = () => {
 
   const handleCreateParent = async () => {
     try {
-      await axios.post('/api/admin/parents', newParent);
+      await api.post('/api/admin/parents', newParent);
       setParentDialogOpen(false);
       setNewParent({ firstName: '', lastName: '', email: '', phone: '' });
       fetchData();
@@ -166,7 +166,7 @@ const AdminPanel = () => {
 
   const handleCreateUser = async () => {
     try {
-      await axios.post('/api/auth/register', newUser);
+      await api.post('/api/auth/register', newUser);
       setUserDialogOpen(false);
       setNewUser({ name: '', email: '', password: '', role: 'teacher', assignedGroups: [] });
       fetchData();
@@ -179,7 +179,7 @@ const AdminPanel = () => {
   const handleDeleteGroup = async (id) => {
     if (window.confirm('Kas olete kindel, et soovite selle grupi kustutada?')) {
       try {
-        await axios.delete(`/api/groups/${id}`);
+        await api.delete(`/api/groups/${id}`);
         fetchData();
       } catch (error) {
         console.error('Error deleting group:', error);
@@ -191,7 +191,7 @@ const AdminPanel = () => {
   const handleDeleteStudent = async (id) => {
     if (window.confirm('Kas olete kindel, et soovite selle õpilase kustutada?')) {
       try {
-        await axios.delete(`/api/students/${id}`);
+        await api.delete(`/api/students/${id}`);
         fetchData();
       } catch (error) {
         console.error('Error deleting student:', error);
