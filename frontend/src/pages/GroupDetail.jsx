@@ -41,7 +41,7 @@ import {
 } from '@mui/icons-material';
 import api from '../config/axios';
 import { format } from 'date-fns';
-import { et } from 'date-fns/locale/et';
+import { et } from 'date-fns/locale';
 import { useAuth } from '../context/AuthContext';
 
 function TabPanel({ children, value, index }) {
