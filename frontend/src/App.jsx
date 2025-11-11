@@ -8,14 +8,29 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import GroupDetail from './pages/GroupDetail';
 import AdminPanel from './pages/AdminPanel';
+import AdminGroupBulkEdit from './pages/AdminGroupBulkEdit';
 
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#2596be',
+      light: '#5daed0',
+      dark: '#1c6f8c',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#6d28d9',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+        },
+      },
     },
   },
 });
@@ -48,6 +63,22 @@ function App() {
             element={
               <PrivateRoute adminOnly>
                 <AdminPanel />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/groups/:id/edit"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminGroupBulkEdit />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/groups/:id"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminGroupBulkEdit />
               </PrivateRoute>
             }
           />
