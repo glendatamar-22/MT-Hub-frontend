@@ -59,10 +59,11 @@ const AppHeader = ({
         <Box 
           component="img"
           src="https://i.postimg.cc/y8NjSQHT/MT-Logo.jpg"
-          alt="Tantsukool MT"
+          alt="Tantsukool MT logo"
+          loading="lazy"
           sx={{ 
-            height: { xs: 40, sm: 48, md: 56 },
-            maxHeight: 56,
+            height: { xs: 64, sm: 72, md: 80 },
+            maxHeight: 80,
             mr: 2,
             cursor: 'pointer',
             objectFit: 'contain'
