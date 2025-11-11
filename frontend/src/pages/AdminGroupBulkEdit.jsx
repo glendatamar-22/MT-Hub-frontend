@@ -1,9 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  AppBar,
-  Toolbar,
-  IconButton,
   Typography,
   Container,
   Paper,
@@ -18,10 +15,11 @@ import {
   Alert,
   Divider,
 } from '@mui/material';
-import { ArrowBack, Delete, Add } from '@mui/icons-material';
+import { Delete, Add } from '@mui/icons-material';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import AppHeader from '../components/AppHeader';
 import api from '../config/axios';
 
 const parentSchema = z.object({
@@ -196,16 +194,7 @@ const AdminGroupBulkEdit = () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => navigate('/admin')} sx={{ mr: 2 }}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Rühma bulk-muutmine
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <AppHeader title="Rühma bulk-muutmine" showBackButton backTo="/admin" />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>

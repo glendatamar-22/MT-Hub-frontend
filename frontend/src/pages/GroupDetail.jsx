@@ -26,12 +26,9 @@ import {
   CardContent,
   CardMedia,
   Grid,
-  AppBar,
-  Toolbar,
   CircularProgress,
 } from '@mui/material';
 import {
-  ArrowBack,
   ContentCopy,
   CheckCircle,
   Add,
@@ -39,6 +36,7 @@ import {
   VideoLibrary,
   Image as ImageIcon,
 } from '@mui/icons-material';
+import AppHeader from '../components/AppHeader';
 import api from '../config/axios';
 import { format } from 'date-fns';
 import { et } from 'date-fns/locale';
@@ -209,16 +207,7 @@ const GroupDetail = () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => navigate('/')} sx={{ mr: 2 }}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {group.name}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <AppHeader title={group.name} showBackButton backTo="/" />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper sx={{ p: 3, mb: 3 }}>

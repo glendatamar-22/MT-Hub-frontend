@@ -33,7 +33,6 @@ import {
   CardContent,
 } from '@mui/material';
 import {
-  ArrowBack,
   Add,
   Edit,
   Delete,
@@ -41,7 +40,9 @@ import {
   Group,
   School,
   Person,
+  Download,
 } from '@mui/icons-material';
+import AppHeader from '../components/AppHeader';
 import api from '../config/axios';
 
 function TabPanel({ children, value, index }) {
@@ -96,6 +97,7 @@ const AdminPanel = () => {
     role: 'teacher',
     assignedGroups: [],
   });
+  const [editUser, setEditUser] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -200,6 +202,22 @@ const AdminPanel = () => {
     }
   };
 
+  const handleUpdateUser = async () => {
+    try {
+      await api.put(`/admin/users/${editUser._id}`, {
+        name: editUser.name,
+        email: editUser.email,
+        role: editUser.role,
+      });
+      setUserDialogOpen(false);
+      setEditUser(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Viga kasutaja uuendamisel');
+    }
+  };
+
   const handleDeleteGroup = async (id) => {
     if (window.confirm('Kas olete kindel, et soovite selle grupi kustutada?')) {
       try {
@@ -224,18 +242,35 @@ const AdminPanel = () => {
     }
   };
 
+  const handleExportGroupCSV = async (groupId) => {
+    try {
+      const response = await api.get(`/groups/${groupId}/export-csv`, {
+        responseType: 'blob',
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get group name for filename
+      const group = groups.find(g => g._id === groupId);
+      const filename = `${group?.name || 'grupp'}_õpilased.csv`;
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      alert('Viga CSV eksportimisel');
+    }
+  };
+
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => navigate('/')} sx={{ mr: 2 }}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Admin Paneel
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <AppHeader title="Admin Paneel" showBackButton backTo="/" />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {stats && (
@@ -317,15 +352,24 @@ const AdminPanel = () => {
                         <TableCell>{group.location}</TableCell>
                         <TableCell>{group.studentCount || 0}</TableCell>
                         <TableCell>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => navigate(`/admin/groups/${group._id}/edit`)}
-                          sx={{ mr: 1 }}
-                          aria-label="Muuda gruppi"
-                        >
-                          <Edit />
-                        </IconButton>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => navigate(`/admin/groups/${group._id}/edit`)}
+                            sx={{ mr: 1 }}
+                            aria-label="Muuda gruppi"
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="success"
+                            onClick={() => handleExportGroupCSV(group._id)}
+                            sx={{ mr: 1 }}
+                            aria-label="Ekspordi CSV"
+                          >
+                            <Download />
+                          </IconButton>
                           <IconButton
                             size="small"
                             color="error"
@@ -360,6 +404,7 @@ const AdminPanel = () => {
                       <TableCell>E-post</TableCell>
                       <TableCell>Roll</TableCell>
                       <TableCell>Määratud grupid</TableCell>
+                      <TableCell>Tegevused</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -371,6 +416,19 @@ const AdminPanel = () => {
                           <Chip label={user.role} color={user.role === 'admin' ? 'primary' : 'default'} />
                         </TableCell>
                         <TableCell>{user.assignedGroups?.length || 0}</TableCell>
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              setEditUser(user);
+                              setUserDialogOpen(true);
+                            }}
+                            aria-label="Muuda kasutajat"
+                          >
+                            <Edit />
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -627,41 +685,58 @@ const AdminPanel = () => {
       {/* User Dialog */}
       <Dialog
         open={userDialogOpen}
-        onClose={() => setUserDialogOpen(false)}
+        onClose={() => {
+          setUserDialogOpen(false);
+          setEditUser(null);
+          setNewUser({ name: '', email: '', password: '', role: 'teacher', assignedGroups: [] });
+        }}
         maxWidth="sm"
         fullWidth
         aria-labelledby={userDialogTitleId}
       >
-        <DialogTitle id={userDialogTitleId}>Lisa kasutaja</DialogTitle>
+        <DialogTitle id={userDialogTitleId}>
+          {editUser ? 'Muuda kasutajat' : 'Lisa kasutaja'}
+        </DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
             label="Nimi"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            value={editUser ? editUser.name : newUser.name}
+            onChange={(e) => editUser 
+              ? setEditUser({ ...editUser, name: e.target.value })
+              : setNewUser({ ...newUser, name: e.target.value })
+            }
             margin="normal"
           />
           <TextField
             fullWidth
             label="E-post"
             type="email"
-            value={newUser.email}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            value={editUser ? editUser.email : newUser.email}
+            onChange={(e) => editUser 
+              ? setEditUser({ ...editUser, email: e.target.value })
+              : setNewUser({ ...newUser, email: e.target.value })
+            }
             margin="normal"
           />
-          <TextField
-            fullWidth
-            label="Parool"
-            type="password"
-            value={newUser.password}
-            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-            margin="normal"
-          />
+          {!editUser && (
+            <TextField
+              fullWidth
+              label="Parool"
+              type="password"
+              value={newUser.password}
+              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              margin="normal"
+            />
+          )}
           <FormControl fullWidth margin="normal">
             <InputLabel>Roll</InputLabel>
             <Select
-              value={newUser.role}
-              onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+              value={editUser ? editUser.role : newUser.role}
+              onChange={(e) => editUser 
+                ? setEditUser({ ...editUser, role: e.target.value })
+                : setNewUser({ ...newUser, role: e.target.value })
+              }
             >
               <MenuItem value="teacher">Õpetaja</MenuItem>
               <MenuItem value="admin">Admin</MenuItem>
@@ -669,9 +744,18 @@ const AdminPanel = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUserDialogOpen(false)}>Tühista</Button>
-          <Button onClick={handleCreateUser} variant="contained">
-            Lisa
+          <Button onClick={() => {
+            setUserDialogOpen(false);
+            setEditUser(null);
+            setNewUser({ name: '', email: '', password: '', role: 'teacher', assignedGroups: [] });
+          }}>
+            Tühista
+          </Button>
+          <Button 
+            onClick={editUser ? handleUpdateUser : handleCreateUser} 
+            variant="contained"
+          >
+            {editUser ? 'Salvesta' : 'Lisa'}
           </Button>
         </DialogActions>
       </Dialog>

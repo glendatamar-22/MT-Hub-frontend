@@ -9,23 +9,17 @@ import {
   Button,
   TextField,
   InputAdornment,
-  AppBar,
-  Toolbar,
   Box,
-  IconButton,
-  Menu,
-  MenuItem,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   LocationOn,
   People,
   AccessTime,
-  Logout,
-  AdminPanelSettings,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AppHeader from '../components/AppHeader';
 import api from '../config/axios';
 import { format } from 'date-fns';
 import { et } from 'date-fns/locale';
@@ -35,8 +29,7 @@ const Dashboard = () => {
   const [filteredGroups, setFilteredGroups] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout, isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,19 +61,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const formatNextTraining = (nextTraining) => {
     if (!nextTraining) return 'Pole planeeritud';
     const date = new Date(nextTraining.date);
@@ -89,38 +69,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Minu Tantsukool
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {isAdmin && (
-              <Button
-                color="inherit"
-                startIcon={<AdminPanelSettings />}
-                onClick={() => navigate('/admin')}
-              >
-                Admin
-              </Button>
-            )}
-            <Typography variant="body2">{user?.name}</Typography>
-            <IconButton color="inherit" onClick={handleMenuOpen}>
-              <People />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={handleLogout}>
-                <Logout sx={{ mr: 1 }} />
-                Logi välja
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
+      <AppHeader />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
