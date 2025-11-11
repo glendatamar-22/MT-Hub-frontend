@@ -115,6 +115,9 @@ const GroupDetail = () => {
   };
 
   const copyEmail = (email) => {
+    if (!email) {
+      return;
+    }
     navigator.clipboard.writeText(email);
     setCopiedEmail(email);
     setTimeout(() => setCopiedEmail(null), 2000);
@@ -263,14 +266,18 @@ const GroupDetail = () => {
                             })
                           : '-'}
                       </TableCell>
-                      <TableCell>{student.parent?.email}</TableCell>
+                      <TableCell>{student.parentEmail || student.parent?.email || '-'}</TableCell>
                       <TableCell>
                         <IconButton
                           size="small"
-                          onClick={() => copyEmail(student.parent?.email)}
-                          color={copiedEmail === student.parent?.email ? 'success' : 'default'}
+                          onClick={() => copyEmail(student.parentEmail || student.parent?.email)}
+                          color={
+                            copiedEmail === (student.parentEmail || student.parent?.email)
+                              ? 'success'
+                              : 'default'
+                          }
                         >
-                          {copiedEmail === student.parent?.email ? (
+                          {copiedEmail === (student.parentEmail || student.parent?.email) ? (
                             <CheckCircle />
                           ) : (
                             <ContentCopy />

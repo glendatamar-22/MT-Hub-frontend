@@ -68,6 +68,11 @@ const AdminPanel = () => {
   const [parentDialogOpen, setParentDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
 
+  const groupDialogTitleId = 'admin-group-dialog-title';
+  const studentDialogTitleId = 'admin-student-dialog-title';
+  const parentDialogTitleId = 'admin-parent-dialog-title';
+  const userDialogTitleId = 'admin-user-dialog-title';
+
   // Form states
   const [newGroup, setNewGroup] = useState({ name: '', location: '', description: '' });
   const [newStudent, setNewStudent] = useState({
@@ -75,7 +80,8 @@ const AdminPanel = () => {
     lastName: '',
     age: '',
     groupId: '',
-    parentId: '',
+    parentName: '',
+    parentEmail: '',
   });
   const [newParent, setNewParent] = useState({
     firstName: '',
@@ -136,15 +142,33 @@ const AdminPanel = () => {
 
   const handleCreateStudent = async () => {
     try {
+      const ageValue = Number.parseInt(newStudent.age, 10);
+      if (Number.isNaN(ageValue)) {
+        alert('Palun sisestage kehtiv vanus');
+        return;
+      }
+      if (!newStudent.parentEmail) {
+        alert('Lapsevanema e-post on kohustuslik');
+        return;
+      }
+
       await api.post('/students', {
         firstName: newStudent.firstName,
         lastName: newStudent.lastName,
-        age: parseInt(newStudent.age),
+        age: ageValue,
         groupId: newStudent.groupId,
-        parentId: newStudent.parentId,
+        parentName: newStudent.parentName,
+        parentEmail: newStudent.parentEmail,
       });
       setStudentDialogOpen(false);
-      setNewStudent({ firstName: '', lastName: '', age: '', groupId: '', parentId: '' });
+      setNewStudent({
+        firstName: '',
+        lastName: '',
+        age: '',
+        groupId: '',
+        parentName: '',
+        parentEmail: '',
+      });
       fetchData();
     } catch (error) {
       console.error('Error creating student:', error);
@@ -295,8 +319,18 @@ const AdminPanel = () => {
                         <TableCell>
                           <IconButton
                             size="small"
+                            color="primary"
+                            onClick={() => navigate(`/admin/groups/${group._id}`)}
+                            sx={{ mr: 1 }}
+                            aria-label="Muuda gruppi"
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             color="error"
                             onClick={() => handleDeleteGroup(group._id)}
+                            aria-label="Kustuta grupp"
                           >
                             <Delete />
                           </IconButton>
@@ -373,7 +407,7 @@ const AdminPanel = () => {
                         </TableCell>
                         <TableCell>{student.age}</TableCell>
                         <TableCell>{student.group?.name}</TableCell>
-                        <TableCell>{student.parent?.email}</TableCell>
+                        <TableCell>{student.parentEmail || student.parent?.email}</TableCell>
                         <TableCell>
                           <IconButton
                             size="small"
@@ -430,8 +464,14 @@ const AdminPanel = () => {
       </Container>
 
       {/* Group Dialog */}
-      <Dialog open={groupDialogOpen} onClose={() => setGroupDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lisa grupp</DialogTitle>
+      <Dialog
+        open={groupDialogOpen}
+        onClose={() => setGroupDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby={groupDialogTitleId}
+      >
+        <DialogTitle id={groupDialogTitleId}>Lisa grupp</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -466,8 +506,14 @@ const AdminPanel = () => {
       </Dialog>
 
       {/* Student Dialog */}
-      <Dialog open={studentDialogOpen} onClose={() => setStudentDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lisa õpilane</DialogTitle>
+      <Dialog
+        open={studentDialogOpen}
+        onClose={() => setStudentDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby={studentDialogTitleId}
+      >
+        <DialogTitle id={studentDialogTitleId}>Lisa õpilane</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -495,6 +541,7 @@ const AdminPanel = () => {
             <InputLabel>Grupp</InputLabel>
             <Select
               value={newStudent.groupId}
+              label="Grupp"
               onChange={(e) => setNewStudent({ ...newStudent, groupId: e.target.value })}
             >
               {groups.map((group) => (
@@ -504,19 +551,22 @@ const AdminPanel = () => {
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Lapsevanem</InputLabel>
-            <Select
-              value={newStudent.parentId}
-              onChange={(e) => setNewStudent({ ...newStudent, parentId: e.target.value })}
-            >
-              {parents.map((parent) => (
-                <MenuItem key={parent._id} value={parent._id}>
-                  {parent.firstName} {parent.lastName} ({parent.email})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextField
+            fullWidth
+            label="Lapsevanema nimi"
+            value={newStudent.parentName}
+            onChange={(e) => setNewStudent({ ...newStudent, parentName: e.target.value })}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Lapsevanema e-post"
+            type="email"
+            value={newStudent.parentEmail}
+            onChange={(e) => setNewStudent({ ...newStudent, parentEmail: e.target.value })}
+            margin="normal"
+            required
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setStudentDialogOpen(false)}>Tühista</Button>
@@ -527,8 +577,14 @@ const AdminPanel = () => {
       </Dialog>
 
       {/* Parent Dialog */}
-      <Dialog open={parentDialogOpen} onClose={() => setParentDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lisa lapsevanem</DialogTitle>
+      <Dialog
+        open={parentDialogOpen}
+        onClose={() => setParentDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby={parentDialogTitleId}
+      >
+        <DialogTitle id={parentDialogTitleId}>Lisa lapsevanem</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -569,8 +625,14 @@ const AdminPanel = () => {
       </Dialog>
 
       {/* User Dialog */}
-      <Dialog open={userDialogOpen} onClose={() => setUserDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lisa kasutaja</DialogTitle>
+      <Dialog
+        open={userDialogOpen}
+        onClose={() => setUserDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby={userDialogTitleId}
+      >
+        <DialogTitle id={userDialogTitleId}>Lisa kasutaja</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
