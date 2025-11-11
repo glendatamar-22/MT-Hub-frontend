@@ -317,15 +317,15 @@ const AdminPanel = () => {
                         <TableCell>{group.location}</TableCell>
                         <TableCell>{group.studentCount || 0}</TableCell>
                         <TableCell>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => navigate(`/admin/groups/${group._id}`)}
-                            sx={{ mr: 1 }}
-                            aria-label="Muuda gruppi"
-                          >
-                            <Edit />
-                          </IconButton>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => navigate(`/admin/groups/${group._id}/edit`)}
+                          sx={{ mr: 1 }}
+                          aria-label="Muuda gruppi"
+                        >
+                          <Edit />
+                        </IconButton>
                           <IconButton
                             size="small"
                             color="error"
