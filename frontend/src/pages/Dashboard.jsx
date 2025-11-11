@@ -58,7 +58,7 @@ const Dashboard = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await api.get('/api/groups');
+      const response = await api.get('/groups');
       setGroups(response.data.data);
       setFilteredGroups(response.data.data);
     } catch (error) {
