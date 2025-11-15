@@ -35,8 +35,11 @@ import {
   Send,
   VideoLibrary,
   Image as ImageIcon,
+  Delete,
 } from '@mui/icons-material';
 import AppHeader from '../components/AppHeader';
+import ScheduleGenerator from '../components/ScheduleGenerator';
+import AttendanceTracker from '../components/AttendanceTracker';
 import api from '../config/axios';
 import { format } from 'date-fns';
 import { et } from 'date-fns/locale';
@@ -226,6 +229,7 @@ const GroupDetail = () => {
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Õpilased" />
             <Tab label="Graafik" />
+            {canEdit && <Tab label="Kohalolek" />}
             <Tab label="Uuendused" />
           </Tabs>
 
@@ -281,14 +285,27 @@ const GroupDetail = () => {
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            {canEdit && (
+              <Box sx={{ mb: 3 }}>
+                <ScheduleGenerator 
+                  groupId={id} 
+                  onGenerated={(newSchedules) => {
+                    fetchSchedules();
+                    alert(`${newSchedules.length} trenni edukalt loodud!`);
+                  }} 
+                />
+              </Box>
+            )}
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">Trennide nimekiri</Typography>
               {canEdit && (
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   startIcon={<Add />}
                   onClick={() => setScheduleDialogOpen(true)}
                 >
-                  Lisa graafik
+                  Lisa üks trenn
                 </Button>
               )}
             </Box>
@@ -301,6 +318,7 @@ const GroupDetail = () => {
                     <TableCell>Aeg</TableCell>
                     <TableCell>Asukoht</TableCell>
                     <TableCell>Kirjeldus</TableCell>
+                    {canEdit && <TableCell>Tegevused</TableCell>}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -315,6 +333,27 @@ const GroupDetail = () => {
                       </TableCell>
                       <TableCell>{schedule.location || group.location}</TableCell>
                       <TableCell>{schedule.description}</TableCell>
+                      {canEdit && (
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={async () => {
+                              if (window.confirm('Kas olete kindel, et soovite selle trenni kustutada?')) {
+                                try {
+                                  await api.delete(`/schedules/${schedule._id}`);
+                                  fetchSchedules();
+                                } catch (error) {
+                                  console.error('Error deleting schedule:', error);
+                                  alert('Viga trenni kustutamisel');
+                                }
+                              }
+                            }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -322,7 +361,13 @@ const GroupDetail = () => {
             </TableContainer>
           </TabPanel>
 
-          <TabPanel value={tabValue} index={2}>
+          {canEdit && (
+            <TabPanel value={tabValue} index={2}>
+              <AttendanceTracker groupId={id} />
+            </TabPanel>
+          )}
+
+          <TabPanel value={tabValue} index={canEdit ? 3 : 2}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
               {canEdit && (
                 <Button
