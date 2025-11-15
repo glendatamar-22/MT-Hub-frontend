@@ -36,6 +36,7 @@ import {
   VideoLibrary,
   Image as ImageIcon,
   Delete,
+  Edit,
 } from '@mui/icons-material';
 import AppHeader from '../components/AppHeader';
 import ScheduleGenerator from '../components/ScheduleGenerator';
@@ -65,6 +66,7 @@ const GroupDetail = () => {
   const [copiedEmail, setCopiedEmail] = useState(null);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
   const [newSchedule, setNewSchedule] = useState({
     title: 'Tantsutrenn',
     date: '',
@@ -99,7 +101,7 @@ const GroupDetail = () => {
 
   const fetchSchedules = async () => {
     try {
-      const response = await api.get(`/schedules?group=${id}`);
+      const response = await api.get(`/schedules?groupId=${id}`);
       setSchedules(response.data.data);
     } catch (error) {
       console.error('Error fetching schedules:', error);
@@ -126,12 +128,19 @@ const GroupDetail = () => {
 
   const handleScheduleSubmit = async () => {
     try {
-      await api.post('/schedules', {
-        ...newSchedule,
-        group: id,
-        date: new Date(newSchedule.date),
-      });
+      if (editingSchedule) {
+        // Update existing schedule
+        await api.put(`/schedules/${editingSchedule._id}`, newSchedule);
+      } else {
+        // Create new schedule
+        await api.post('/schedules', {
+          ...newSchedule,
+          group: id,
+          date: new Date(newSchedule.date),
+        });
+      }
       setScheduleDialogOpen(false);
+      setEditingSchedule(null);
       setNewSchedule({
         title: 'Tantsutrenn',
         date: '',
@@ -142,9 +151,22 @@ const GroupDetail = () => {
       });
       fetchSchedules();
     } catch (error) {
-      console.error('Error creating schedule:', error);
-      alert('Viga graafiku lisamisel');
+      console.error('Error saving schedule:', error);
+      alert('Viga graafiku salvestamisel');
     }
+  };
+
+  const handleEditSchedule = (schedule) => {
+    setEditingSchedule(schedule);
+    setNewSchedule({
+      title: schedule.title,
+      date: schedule.date.split('T')[0],
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      location: schedule.location || '',
+      description: schedule.description || '',
+    });
+    setScheduleDialogOpen(true);
   };
 
   const handleFileUpload = async (file) => {
@@ -337,6 +359,14 @@ const GroupDetail = () => {
                         <TableCell>
                           <IconButton
                             size="small"
+                            color="primary"
+                            onClick={() => handleEditSchedule(schedule)}
+                            sx={{ mr: 1 }}
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             color="error"
                             onClick={async () => {
                               if (window.confirm('Kas olete kindel, et soovite selle trenni kustutada?')) {
@@ -470,8 +500,24 @@ const GroupDetail = () => {
       </Container>
 
       {/* Schedule Dialog */}
-      <Dialog open={scheduleDialogOpen} onClose={() => setScheduleDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lisa graafik</DialogTitle>
+      <Dialog 
+        open={scheduleDialogOpen} 
+        onClose={() => {
+          setScheduleDialogOpen(false);
+          setEditingSchedule(null);
+          setNewSchedule({
+            title: 'Tantsutrenn',
+            date: '',
+            startTime: '',
+            endTime: '',
+            location: '',
+            description: '',
+          });
+        }} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <DialogTitle>{editingSchedule ? 'Muuda trenni' : 'Lisa trenn'}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
