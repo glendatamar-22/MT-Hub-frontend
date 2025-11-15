@@ -204,11 +204,18 @@ const AdminPanel = () => {
 
   const handleUpdateUser = async () => {
     try {
-      await api.put(`/admin/users/${editUser._id}`, {
+      const updateData = {
         name: editUser.name,
         email: editUser.email,
         role: editUser.role,
-      });
+      };
+      
+      // Only include password if it was changed
+      if (editUser.password && editUser.password.trim() !== '') {
+        updateData.password = editUser.password;
+      }
+      
+      await api.put(`/admin/users/${editUser._id}`, updateData);
       setUserDialogOpen(false);
       setEditUser(null);
       fetchData();
@@ -719,16 +726,18 @@ const AdminPanel = () => {
             }
             margin="normal"
           />
-          {!editUser && (
-            <TextField
-              fullWidth
-              label="Parool"
-              type="password"
-              value={newUser.password}
-              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-              margin="normal"
-            />
-          )}
+          <TextField
+            fullWidth
+            label={editUser ? "Uus parool (jäta tühjaks kui ei muuda)" : "Parool"}
+            type="password"
+            value={editUser ? (editUser.password || '') : newUser.password}
+            onChange={(e) => editUser 
+              ? setEditUser({ ...editUser, password: e.target.value })
+              : setNewUser({ ...newUser, password: e.target.value })
+            }
+            margin="normal"
+            required={!editUser}
+          />
           <FormControl fullWidth margin="normal">
             <InputLabel>Roll</InputLabel>
             <Select

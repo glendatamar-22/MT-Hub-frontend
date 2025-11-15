@@ -90,10 +90,6 @@ const Login = () => {
               {loading ? 'Sisselogimine...' : 'Logi sisse'}
             </Button>
           </form>
-
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
-            Testimiseks: admin@tantsukool.ee / admin123
-          </Typography>
         </Paper>
       </Box>
     </Container>
